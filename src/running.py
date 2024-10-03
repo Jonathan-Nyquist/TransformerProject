@@ -19,8 +19,8 @@ import sklearn
 
 from utils import utils, analysis
 from models.loss import l2_reg_loss
-from datasets.dataset import ImputationDataset, TransductionDataset, ClassiregressionDataset, collate_unsuperv, collate_superv
-
+from datasets.dataset import ImputationDataset, TransductionDataset, ClassiregressionDataset, collate_unsuperv, \
+    collate_superv
 
 logger = logging.getLogger('__main__')
 
@@ -38,11 +38,12 @@ def pipeline_factory(config):
     if task == "imputation":
         return partial(ImputationDataset, mean_mask_length=config['mean_mask_length'],
                        masking_ratio=config['masking_ratio'], mode=config['mask_mode'],
-                       distribution=config['mask_distribution'], exclude_feats=config['exclude_feats']),\
-                        collate_unsuperv, UnsupervisedRunner
+                       distribution=config['mask_distribution'], exclude_feats=config['exclude_feats']), \
+            collate_unsuperv, UnsupervisedRunner
     if task == "transduction":
         return partial(TransductionDataset, mask_feats=config['mask_feats'],
-                       start_hint=config['start_hint'], end_hint=config['end_hint']), collate_unsuperv, UnsupervisedRunner
+                       start_hint=config['start_hint'],
+                       end_hint=config['end_hint']), collate_unsuperv, UnsupervisedRunner
     if (task == "classification") or (task == "regression"):
         return ClassiregressionDataset, collate_superv, SupervisedRunner
     else:
@@ -98,11 +99,14 @@ def setup(args):
 
 
 def fold_evaluate(dataset, model, device, loss_module, target_feats, config, dataset_name):
-
-    allfolds = {'target_feats': target_feats,  # list of len(num_folds), each element: list of target feature integer indices
-                'predictions': [],  # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) prediction per sample
-                'targets': [],  # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) target/original input per sample
-                'target_masks': [],  # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) boolean mask per sample
+    allfolds = {'target_feats': target_feats,
+                # list of len(num_folds), each element: list of target feature integer indices
+                'predictions': [],
+                # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) prediction per sample
+                'targets': [],
+                # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) target/original input per sample
+                'target_masks': [],
+                # list of len(num_folds), each element: (num_samples, seq_len, feat_dim) boolean mask per sample
                 'metrics': [],  # list of len(num_folds), each element: (num_samples, num_metrics) metric per sample
                 'IDs': []}  # list of len(num_folds), each element: (num_samples,) ID per sample
 
@@ -224,9 +228,7 @@ def validate(val_evaluator, tensorboard_writer, config, best_metrics, best_value
     return aggr_metrics, best_metrics, best_value
 
 
-
 def check_progress(epoch):
-
     if epoch in [100, 140, 160, 220, 280, 340]:
         return True
     else:
@@ -235,8 +237,8 @@ def check_progress(epoch):
 
 class BaseRunner(object):
 
-    def __init__(self, model, dataloader, device, loss_module, optimizer=None, l2_reg=None, print_interval=10, console=True):
-
+    def __init__(self, model, dataloader, device, loss_module, optimizer=None, l2_reg=None, print_interval=10,
+                 console=True):
         self.model = model
         self.dataloader = dataloader
         self.device = device
@@ -255,7 +257,6 @@ class BaseRunner(object):
         raise NotImplementedError('Please override in child class')
 
     def print_callback(self, i_batch, metrics, prefix=''):
-
         total_batches = len(self.dataloader)
 
         template = "{:5.1f}% | batch: {:9d} of {:9d}"
@@ -288,7 +289,8 @@ class UnsupervisedRunner(BaseRunner):
 
             # Cascade noise masks (batch_size, padded_length, feat_dim) and padding masks (batch_size, padded_length)
             target_masks = target_masks * padding_masks.unsqueeze(-1)
-            loss = self.loss_module(predictions, targets, target_masks)  # (num_active,) individual loss (square error per element) for each active value in batch
+            loss = self.loss_module(predictions, targets,
+                                    target_masks)  # (num_active,) individual loss (square error per element) for each active value in batch
             batch_loss = torch.sum(loss)
             mean_loss = batch_loss / len(loss)  # mean loss (over active elements) used for optimization
 
@@ -347,15 +349,16 @@ class UnsupervisedRunner(BaseRunner):
 
             # Cascade noise masks (batch_size, padded_length, feat_dim) and padding masks (batch_size, padded_length)
             target_masks = target_masks * padding_masks.unsqueeze(-1)
-            loss = self.loss_module(predictions, targets, target_masks)  # (num_active,) individual loss (square error per element) for each active value in batch
+            loss = self.loss_module(predictions, targets,
+                                    target_masks)  # (num_active,) individual loss (square error per element) for each active value in batch
             batch_loss = torch.sum(loss).cpu().item()
             mean_loss = batch_loss / len(loss)  # mean loss (over active elements) used for optimization the batch
 
             if keep_all:
                 per_batch['target_masks'].append(target_masks.cpu().numpy())
                 per_batch['targets'].append(targets.cpu().numpy())
-                per_batch['predictions'].append(predictions.cpu().numpy())
-                per_batch['metrics'].append([loss.cpu().numpy()])
+                per_batch['predictions'].append(predictions.cpu().detach().numpy())  # Ren_Modified
+                per_batch['metrics'].append([loss.cpu().detach().numpy()])
                 per_batch['IDs'].append(IDs)
 
             metrics = {"loss": mean_loss}
@@ -473,7 +476,8 @@ class SupervisedRunner(BaseRunner):
 
         if self.classification:
             predictions = torch.from_numpy(np.concatenate(per_batch['predictions'], axis=0))
-            probs = torch.nn.functional.softmax(predictions)  # (total_samples, num_classes) est. prob. for each class and sample
+            probs = torch.nn.functional.softmax(
+                predictions)  # (total_samples, num_classes) est. prob. for each class and sample
             predictions = torch.argmax(probs, dim=1).cpu().numpy()  # (total_samples,) int class index for each sample
             probs = probs.cpu().numpy()
             targets = np.concatenate(per_batch['targets'], axis=0).flatten()

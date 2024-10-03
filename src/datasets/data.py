@@ -7,6 +7,7 @@ import logging
 from itertools import repeat, chain
 
 import numpy as np
+from numpy import float64, float32, float16
 import pandas as pd
 from tqdm import tqdm
 from sktime.utils import load_data
@@ -229,6 +230,9 @@ class TSRegressionArchive(BaseData):
         self.config = config
 
         self.all_df, self.labels_df = self.load_all(root_dir, file_list=file_list, pattern=pattern)
+        print("\n")
+        print(self.all_df.head(10))
+        print(self.all_df.index)
         self.all_IDs = self.all_df.index.unique()  # all sample IDs (integer indices 0 ... num_samples-1)
 
         if limit_size is not None:
@@ -242,6 +246,11 @@ class TSRegressionArchive(BaseData):
         # use all features
         self.feature_names = self.all_df.columns
         self.feature_df = self.all_df
+        print("\n")
+        print(self.all_df.head(10))
+        print(self.feature_df.head(10))
+        print(self.all_IDs)
+        print("\n")
 
     def load_all(self, root_dir, file_list=None, pattern=None):
         """
@@ -325,12 +334,17 @@ class TSRegressionArchive(BaseData):
         # First create a (seq_len, feat_dim) dataframe for each sample, indexed by a single integer ("ID" of the sample)
         # Then concatenate into a (num_samples * seq_len, feat_dim) dataframe, with multiple rows corresponding to the
         # sample index (i.e. the same scheme as all datasets in this project)
+        print("\n1")
+        print(df.head(10))
         df = pd.concat((pd.DataFrame({col: df.loc[row, col] for col in df.columns}).reset_index(drop=True).set_index(
             pd.Series(lengths[row, 0]*[row])) for row in range(df.shape[0])), axis=0)
-
+        print("\n1")
+        print(df.head(10))
         # Replace NaN values
         grp = df.groupby(by=df.index)
         df = grp.transform(interpolate_missing)
+        print("\n1")
+        print(df.head(10))
 
         return df, labels_df
 
@@ -365,8 +379,11 @@ class PMUData(BaseData):
         else:
             # self.all_df = self.all_df.sort_values(by=['ExID'])  # dataset is presorted
             self.max_seq_len = 30
-
-        self.all_df = self.all_df.set_index('ExID')
+            num_whole_samples = len(self.all_df) // self.max_seq_len  # commented code is for more general IDs
+            IDs = list(chain.from_iterable(map(lambda x: repeat(x, self.max_seq_len), range(num_whole_samples + 1))))
+            IDs = IDs[:len(self.all_df)]  # either last sample is completely superfluous, or it has to be shortened
+            self.all_df.insert(loc=0, column='Id', value=IDs)
+        self.all_df = self.all_df.set_index('Id')
         # rename columns
         self.all_df.columns = [re.sub(r'\d+', str(i//3), col_name) for i, col_name in enumerate(self.all_df.columns[:])]
         #self.all_df.columns = ["_".join(col_name.split(" ")[:-1]) for col_name in self.all_df.columns[:]]
@@ -380,8 +397,18 @@ class PMUData(BaseData):
             self.all_IDs = self.all_IDs[:limit_size]
             self.all_df = self.all_df.loc[self.all_IDs]
 
-        self.feature_names = self.all_df.columns  # all columns are used as features
+        self.feature_names = ['BattV_Avg', 'PTemp_C_Avg', 'WS1_ms_Max', 'WS1_ms_Avg',
+       'WS_ms_S_WVT', 'WindDir',
+       'WS3_ms_Avg', 'WS3_ms_Std', 'WS4_ms_Avg', 'WS4_ms_Std', 'AirTC_Avg',
+       'RH', 'VWCBare_Avg', 'ECBare_Avg', 'TBare_Avg', 'PBare_Avg',
+       'VWCShrub_Avg', 'ECShrub_Avg', 'TShrub_Avg', 'PShrub_Avg',
+       'VWCGrass_Avg', 'ECGrass_Avg', 'TGrass_Avg', 'PGrass_Avg', 'Sensit_Tot',
+       'SenSec']  # all columns are used as features
+        print("\nIndex")
+        print(self.all_df.index)
+        print("\n")
         self.feature_df = self.all_df[self.feature_names]
+        
 
     def load_all(self, root_dir, file_list=None, pattern=None):
         """
@@ -421,7 +448,8 @@ class PMUData(BaseData):
                 all_df = pd.concat(pool.map(PMUData.load_single, input_paths))
         else:  # read 1 file at a time
             all_df = pd.concat(PMUData.load_single(path) for path in input_paths)
-
+        
+        
         return all_df
 
     @staticmethod
@@ -442,7 +470,132 @@ class PMUData(BaseData):
         df = pd.read_csv(filepath)
         return df
 
+class CSVData(BaseData):
+    """
+    Dataset class for data in a pkl format.
+    Attributes:
+        all_df: dataframe indexed by ID, with multiple rows corresponding to the same index (sample).
+            Each row is a time step; Each column contains either metadata (e.g. timestamp) or a feature.
+        feature_df: contains the subset of columns of `all_df` which correspond to selected features
+        feature_names: names of columns contained in `feature_df` (same as feature_df.columns)
+        all_IDs: IDs contained in `all_df`/`feature_df` (same as all_df.index.unique() )
+        max_seq_len: maximum sequence (time series) length. If None, script argument `max_seq_len` will be used.
+            (Moreover, script argument overrides this attribute)
+    """
+    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None, config=None):
+
+        self.set_num_processes(n_proc=n_proc)
+
+        self.all_df = self.load_all(root_dir, file_list=file_list, pattern=pattern)
+        
+        if config['data_window_len'] is not None:
+            self.max_seq_len = config['data_window_len']
+        else:
+            self.max_seq_len = 30
+        if pattern == "TRAIN":
+            self.all_df = CSVData.makeWindowedDf(self.all_df, self.max_seq_len)
+            
+        num_whole_samples = len(self.all_df) // self.max_seq_len  # commented code is for more general IDs
+        IDs = list(chain.from_iterable(map(lambda x: repeat(x, self.max_seq_len), range(num_whole_samples + 1))))
+        IDs = IDs[:len(self.all_df)]  # either last sample is completely superfluous, or it has to be shortened
+        self.all_df.insert(loc=0, column='Id', value=IDs)
+            
+        self.all_df = self.all_df.set_index('Id')
+        
+        # rename columns
+        #self.all_df.columns = [re.sub(r'\d+', str(i//3), col_name) for i, col_name in enumerate(self.all_df.columns[:])]
+        #self.all_df.columns = ["_".join(col_name.split(" ")[:-1]) for col_name in self.all_df.columns[:]]
+        self.all_IDs = self.all_df.index.unique()  # all sample (session) IDs
+        
+        if limit_size is not None:
+            if limit_size > 1:
+                limit_size = int(limit_size)
+            else:  # interpret as proportion if in (0, 1]
+                limit_size = int(limit_size * len(self.all_IDs))
+            self.all_IDs = self.all_IDs[:limit_size]
+            self.all_df = self.all_df.loc[self.all_IDs]
+
+        self.feature_names = list(self.all_df.columns)
+        for name in self.feature_names:
+          #For some reason, even if something is of type float64, it passes through the if statement
+          # if self.all_df[name].dtype is not float64: # and self.all_df[name].dtype is not float32 and self.all_df[name].dtype is not float16:
+          #     print("Dropped %s because of unsupported type: %s, Currently supports: float64, float32, float16" % (name, self.all_df[name].dtype))
+          #     self.feature_names.remove(name)
+
+          #This will specifically target the date column
+          if name == "Date":
+            self.feature_names.remove(name)
+        self.feature_df = self.all_df[self.feature_names]
+        print(self.feature_names)
+        print(self.nans)
+    
+    def makeWindowedDf(df, window_size):
+        windows = []
+        for i in range(0, len(df) - window_size + 1, int(window_size/20)):
+            window = df.iloc[i:i+window_size]
+            windows.append(window)
+        return pd.concat(windows)
+    
+    def load_all(self, root_dir, file_list=None, pattern=None):
+        """
+        Loads datasets from csv files contained in `root_dir` into a dataframe, optionally choosing from `pattern`
+        Args:
+            root_dir: directory containing all individual .csv files
+            file_list: optionally, provide a list of file paths within `root_dir` to consider.
+                Otherwise, entire `root_dir` contents will be used.
+            pattern: optionally, apply regex string to select subset of files
+        Returns:
+            all_df: a single (possibly concatenated) dataframe with all data corresponding to specified files
+        """
+
+        # Select paths for training and evaluation
+        if file_list is None:
+            data_paths = glob.glob(os.path.join(root_dir, '*'))  # list of all paths
+        else:
+            data_paths = [os.path.join(root_dir, p) for p in file_list]
+        if len(data_paths) == 0:
+            raise Exception('No files found using: {}'.format(os.path.join(root_dir, '*')))
+
+        if pattern is None:
+            # by default evaluate on
+            selected_paths = data_paths
+        else:
+            selected_paths = list(filter(lambda x: re.search(pattern, x), data_paths))
+
+        input_paths = [p for p in selected_paths if os.path.isfile(p) and p.endswith('.csv')]
+        if len(input_paths) == 0:
+            raise Exception("No .csv files found using pattern: '{}'".format(pattern))
+
+        # if self.n_proc > 1:
+        #     # Load in parallel
+        #     _n_proc = min(self.n_proc, len(input_paths))  # no more than file_names needed here
+        #     logger.info("Loading {} datasets files using {} parallel processes ...".format(len(input_paths), _n_proc))
+        #     with Pool(processes=_n_proc) as pool:
+        #         all_df= pd.concat(pool.map(CSVData.load_single, input_paths))
+        # else:  # read 1 file at a time
+        all_df= pd.concat(CSVData.load_single(self, path) for path in input_paths)
+        
+        
+        return all_df
+
+    @staticmethod
+    def load_single(self, filepath):
+        df = CSVData.read_data(filepath)
+        self.nans = df.isna()
+        #df = PMUData.select_columns(df)
+        num_nan = df.isna().sum().sum()
+        if num_nan > 0:
+            logger.warning("{} nan values in {} will be replaced by 0".format(num_nan, filepath))
+            df = df.fillna(0)
+
+        return df
+
+    @staticmethod
+    def read_data(filepath):
+        df = pd.read_csv(filepath)
+        return df
 
 data_factory = {'weld': WeldData,
                 'tsra': TSRegressionArchive,
-                'pmu': PMUData}
+                'pmu': PMUData,
+                'csv': CSVData}

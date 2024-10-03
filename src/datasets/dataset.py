@@ -226,7 +226,8 @@ def collate_unsuperv(data, max_len=None, mask_compensation=False):
     if mask_compensation:
         X = compensate_masking(X, target_masks)
 
-    padding_masks = padding_mask(torch.tensor(lengths, dtype=torch.int16), max_len=max_len)  # (batch_size, padded_length) boolean tensor, "1" means keep
+    padding_masks = padding_mask(torch.tensor(lengths, dtype=torch.int16),
+                                 max_len=max_len)  # (batch_size, padded_length) boolean tensor, "1" means keep
     target_masks = ~target_masks  # inverse logic: 0 now means ignore, 1 means predict
     return X, targets, target_masks, padding_masks, IDs
 
@@ -271,6 +272,25 @@ def noise_mask(X, masking_ratio, lm=3, mode='separate', distribution='geometric'
     return mask
 
 
+# Ren_Modified
+def noise_mask_v1(X, masking_ratio, lm=3, mode='separate', distribution='geometric', exclude_feats=None):
+    mask = X == 0
+    return mask
+
+
+def noise_mask_v2(X, masking_ratio, lm=3, mode='separate', distribution='geometric', exclude_feats=None):
+    if X.shape[1] < 2:
+        raise ValueError("The input array does not have a second column to mask.")
+
+    # Create a mask that initially masks nothing
+    mask = np.ones(X.shape, dtype=bool)
+
+    # Mask the entire second column
+    mask[:, 1] = False  # Set all entries inz the second column to False
+
+    return mask
+
+
 def geom_noise_mask_single(L, lm, masking_ratio):
     """
     Randomly create a boolean mask of length `L`, consisting of subsequences of average length lm, masking with 0s a `masking_ratio`
@@ -285,7 +305,8 @@ def geom_noise_mask_single(L, lm, masking_ratio):
     """
     keep_mask = np.ones(L, dtype=bool)
     p_m = 1 / lm  # probability of each masking sequence stopping. parameter of geometric distribution.
-    p_u = p_m * masking_ratio / (1 - masking_ratio)  # probability of each unmasked sequence stopping. parameter of geometric distribution.
+    p_u = p_m * masking_ratio / (
+                1 - masking_ratio)  # probability of each unmasked sequence stopping. parameter of geometric distribution.
     p = [p_m, p_u]
 
     # Start in state 0 with masking_ratio probability
