@@ -23,7 +23,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-
+import numpy as np
 # Project modules
 from options import Options
 from running import setup, pipeline_factory, validate, check_progress, NEG_METRICS
@@ -194,10 +194,49 @@ def main(config):
         test_evaluator = runner_class(model, test_loader, device, loss_module,
                                             print_interval=config['print_interval'], console=config['console'])
         aggr_metrics_test, per_batch_test = test_evaluator.evaluate(keep_all=True)
-        print_str = 'Test Summary: '
-        for k, v in aggr_metrics_test.items():
-            print_str += '{}: {:8f} | '.format(k, v)
-        logger.info(print_str)
+        # Ren_Modified
+        # Directory where the npz file will be saved
+        best_predictions = config['pred_dir']
+        if not os.path.exists(best_predictions):
+            os.makedirs(best_predictions)
+
+        # File path for npz file
+        predictions_path = os.path.join(best_predictions, 'best_predictions.npz')
+
+        # Initialize lists to collect all data for each attribute
+        all_predictions = []
+        all_targets = []
+        all_masks = []
+        all_metrics = []
+        all_ids = []
+
+        # Iterate through batches
+        for predictions, targets, masks, metrics, ids in zip(per_batch_test['predictions'],
+                                                             per_batch_test['targets'],
+                                                             per_batch_test['target_masks'],
+                                                             per_batch_test['metrics'],
+                                                             per_batch_test['IDs']):
+            # Store arrays directly without reshaping if not necessary
+            all_predictions.append(predictions)
+            all_targets.append(targets)
+            all_masks.append(masks)
+            all_metrics.append(metrics)
+            all_ids.append(ids)  # Ensure IDs are collected as lists or arrays as necessary
+
+        # Concatenate lists of arrays into single arrays for each attribute
+        # Since we need an extra dimension to match the training file structure:
+        all_predictions = np.array(all_predictions)  # Use np.array to encapsulate without changing internal structure
+        all_targets = np.array(all_targets)
+        all_masks = np.array(all_masks)
+        all_metrics = np.array(all_metrics)
+        all_ids = np.array(all_ids)  # Convert list of lists into an array
+
+        # Save all data to a single npz file with an added dimension
+        np.savez(predictions_path, predictions=all_predictions, targets=all_targets, masks=all_masks,
+                 metrics=all_metrics, IDs=all_ids)
+
+        # Log the operation
+        print(f"Saved predictions, targets, masks, metrics, and IDs to '{predictions_path}'")
         return
     
     # Initialize data generators

@@ -23,9 +23,9 @@ python src/main.py `
 
 python src/main.py `
 --output_dir experiments `
---config SMPModelNotFilled/configuration.json `
 --data_dir data/SMP `
---load_model SMPModelNotFilled/checkpoints/model_best.pth `
+--name "SMPModel",`
+--load_model SMPModel/checkpoints/model_best.pth `
 --batch_size 128 `
 --normalization standardization `
 --test_pattern "TEST" `

@@ -158,7 +158,7 @@ def getNonNanData(total_length, gaps):
 
     return non_nan_ranges
 
-data = pd.read_pickle('data/SMPSingleGap.pkl')
+data = pd.read_pickle('data/SMPSKLearnGap.pkl')
 # Find the gap. This will be used later for plotting
 nan_gap = getGapAll(data["P2_VWC"])
 print(nan_gap)
@@ -171,5 +171,5 @@ valData = data[start:end]
 data = data.drop(data.index[start:end])
 
 # Write test and train sets to local directory
-data.to_csv("data/SMP/SMP_TRAIN.csv")
-valData.to_csv("data/SMP/SMP_TEST.csv")
+data.to_csv("data/SMPSKLearn/SMP_TRAIN.csv")
+valData.to_csv("data/SMPSKLearn/SMP_TEST.csv")
