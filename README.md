@@ -103,13 +103,13 @@ python --version
 ```
 This should display Python version that's higher than 3.8.10, in my side, I choose to use Python 3.11.4.
 
-If you are willing to create a virtual environment, you can, but you can also install the dependencies directly. 
 
 #### 2. Install the required packages:
 
 ```bash
 pip install -r requirements_graph.txt
 ```
+If you are willing to create a virtual environment, you can, but you can also install the dependencies directly. 
 
 #### 3. Replace the experiment name in the make_graphs.py script:
 
