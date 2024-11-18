@@ -45,12 +45,6 @@ This should display Python 3.8.10(or 3.7-3.8).
 pip install -r failsafe_requirements.txt
 ```
 
-#### Locate to src folder:
-
-```bash
-cd src
-```
-
 Run the following command to impute missing values in the SMP dataset:
 ```bash
 python src/main.py `
