@@ -87,7 +87,7 @@ It will also display in your experiments' folder. You may copy [your experiments
 
 In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 
-### Installation and Drawing Graphs
+## Installation and Drawing Graphs
 
 Our make_graphs.py script uses newer Python versions as dependency, so you should:
 
@@ -127,7 +127,7 @@ python make_graphs.py
 
 Now you should be able to see the results in the "experiments" folder.
 
-### Training the model
+## Training the model
 
 In case you want to train a new model, this is an example: 
 ```bash
