@@ -14,7 +14,7 @@ This instruction uses Python 3.8.10 specifically as an example, if you had troub
 
 [Here](https://www.python.org/downloads/release/python-3810/) is the link to download Python 3.8.10.
 
-#### Create a virtual environment:
+#### 1. Create a virtual environment:
 If you are working with a modern compiler, e.g. PyCharm, you may create a virtual environment by going to File -> Settings -> Project -> Python Interpreter -> Add -> Virtualenv Environment -> Base Interpreter -> Python 3.8 -> OK
 
 Otherwise, enter the following commands in the terminal:
@@ -31,7 +31,7 @@ Create a virtual environment:
 python3.8 -m venv venv_3.8.10
 ```
 
-#### Activate the virtual environment:
+#### 2. Activate the virtual environment:
 
 Be careful with the path, it may be different on your machine.
 
@@ -40,11 +40,12 @@ venv_3.8.10/Scripts/activate
 ```
 
 
-#### Install the required packages:
+#### 3. Install the required packages:
 
 ```bash
 pip install -r failsafe_requirements.txt
 ```
+#### 4. Testing
 
 Run the following command to impute missing values in the SMP dataset:
 ```bash
@@ -91,7 +92,7 @@ In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 Our make_graphs.py script uses newer Python versions as dependency, so you should:
 
 If you are working with a modern compiler, e.g. PyCharm, you may need to change your Python interpreter to a newer version, e.g. Python 3.11 or Python 3.12.
-#### Deactivate the virtual environment:
+#### 1. Deactivate the virtual environment:
 ```bash
 deactivate
 ```
@@ -104,13 +105,13 @@ This should display Python version that's higher than 3.8.10, in my side, I choo
 
 If you are willing to create a virtual environment, you can, but you can also install the dependencies directly. 
 
-#### Install the required packages:
+#### 2. Install the required packages:
 
 ```bash
 pip install -r requirements_graph.txt
 ```
 
-#### Replace the experiment name in the make_graphs.py script:
+#### 3. Replace the experiment name in the make_graphs.py script:
 
 Don't forget to replace the experiment name in the make_graphs.py script with your experiment name.
 
@@ -118,7 +119,7 @@ Don't forget to replace the experiment name in the make_graphs.py script with yo
 experiment_name = "[your experiments name]"
 ```
 
-#### Run the make_graphs.py script:
+#### 4. Run the make_graphs.py script:
 
 ```bash
 python make_graphs.py
