@@ -91,11 +91,11 @@ In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 
 Our make_graphs.py script uses newer Python versions as dependency, so you should:
 
-If you are working with a modern compiler, e.g. PyCharm, you may need to change your Python interpreter to a newer version, e.g. Python 3.11 or Python 3.12.
 #### 1. Deactivate the virtual environment:
 ```bash
 deactivate
 ```
+If you are working with a modern compiler, e.g. PyCharm, you may need to change your Python interpreter to a newer version, e.g. Python 3.11 or Python 3.12.
 
 Now check your python version:
 ```bash
