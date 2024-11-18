@@ -65,7 +65,7 @@ def statisics(pred, actual):
 #denormalizes the df using the std and mean
 def denormalize(df, std, mean):
   return df * (std + np.finfo(float).eps) + mean
-p = "SMPModel_model_best_rule"
+p = "SMPModel_2024-10-17_15-28-44_P3y"
 path = f"experiments/{p}/predictions/best_predictions.npz"
 pathnorm = f"experiments/{p}/normalization.pickle"
 #actual is the data without the gap
