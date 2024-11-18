@@ -71,7 +71,7 @@ python src/main.py `
 --gpu -1 `
 --epochs 300 
 ```
-If you are experiencing trouble with the command, you may copy and paste the command in the command prompt.
+If you are experiencing trouble with running the command, you may copy and paste the command in the command prompt.
 
 Notes: SMPModelSKLearn and SMPSKLearn refers to the model was trained with pre-imputed data using the sklearn model. 
 
