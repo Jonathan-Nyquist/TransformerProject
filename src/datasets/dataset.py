@@ -32,7 +32,7 @@ class ImputationDataset(Dataset):
         """
 
         X = self.feature_df.loc[self.IDs[ind]].values  # (seq_length, feat_dim) array
-        mask = noise_mask(X, self.masking_ratio, self.mean_mask_length, self.mode, self.distribution,
+        mask = noise_mask_v2(X, self.masking_ratio, self.mean_mask_length, self.mode, self.distribution,
                           self.exclude_feats)  # (seq_length, feat_dim) boolean array
 
         return torch.from_numpy(X), torch.from_numpy(mask), self.IDs[ind]
