@@ -2,30 +2,31 @@
 python src/main.py `
 --output_dir experiments `
 --data_dir data/SMP `
---records_file SMPModel.xls `
---comment "2024-09-15" `
 --name SMPModel `
---data_class csv `
---epochs 300 `
---lr 0.001 `
 --batch_size 128 `
+--normalization standardization `
+--records_file SMPModel.xls `
+--data_class csv `
+--epochs 200 `
+--lr 0.001 `
 --optimizer RAdam `
 --pattern TRAIN `
 --val_pattern TEST `
---mean_mask_length 500 `
+--mean_mask_length 350 `
 --pos_encoding learnable `
---d_model 200 `
+--d_model 128 `
 --task imputation `
 --change_output `
 --data_window_len 350 `
 --mask_mode separate `
---mask_distribution geometric
+--comment "2024-10-08" `
+--mask_distribution 'geometric' `
 
 python src/main.py `
 --output_dir experiments `
 --data_dir data/SMP `
 --name "SMPModel",`
---load_model SMPModel/checkpoints/model_best.pth `
+--load_model SMPModelNotFilled/checkpoints/model_best.pth `
 --batch_size 128 `
 --normalization standardization `
 --test_pattern "TEST" `
