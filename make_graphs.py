@@ -71,7 +71,7 @@ def denormalize(df, std, mean):
     return df * (std + np.finfo(float).eps) + mean
 
 
-experiment_name = "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
+experiment_name = "SMPModelSKLearn_2024-11-18_18-02-54_HUR"
 path = f"experiments/{experiment_name}/predictions/best_predictions.npz"
 pathnorm = f"experiments/{experiment_name}/normalization.pickle"
 # actual is the data without the gap
