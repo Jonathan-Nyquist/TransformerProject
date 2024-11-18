@@ -24,6 +24,8 @@ Check your python version:
 python --version
 ```
 
+This should display Python 3.8.10(or 3.7-3.8).
+
 Create a virtual environment:
 ```bash
 python3.8 -m venv venv_3.8.10
@@ -37,7 +39,6 @@ Be careful with the path, it may be different on your machine.
 venv_3.8.10/Scripts/activate
 ```
 
-This should display Python 3.8.10(or 3.7-3.8).
 
 #### Install the required packages:
 
