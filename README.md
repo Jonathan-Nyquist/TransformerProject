@@ -45,6 +45,8 @@ venv_3.8.10/Scripts/activate
 ```bash
 pip install -r failsafe_requirements.txt
 ```
+
+Note: if you are working with Apple M-series chips, you may need to consider installing torch==1.12, instead of torch==1.7.1.
 #### 4. Testing
 
 Run the following command to impute missing values in the SMP dataset:
