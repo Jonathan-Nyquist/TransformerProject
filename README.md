@@ -7,47 +7,16 @@ This paper implements an existing transformer-based approach for predicting miss
 ## THIS REPO IS A MODIFIED MODEL BASED ON AN EXISTING MODEL, ORIGINAL MODEL SEE https://github.com/gzerveas/mvts_transformer?tab=readme-ov-file
 
 ## Requirements
-Have both Python 3.7-3.8 and a newer Python version, e.g. Python 3.11 or Python 3.12.
+Python 3.12.
 
 ## Installation and Imputation
-This instruction uses Python 3.8.10 specifically as an example, if you had trouble with the installation of Python 3.8.10, Python 3.7-3.8 should work fine.
 
-[Here](https://www.python.org/downloads/release/python-3810/) is the link to download Python 3.8.10.
-
-#### 1. Create a virtual environment:
-If you are working with a modern compiler, e.g. PyCharm, you may create a virtual environment by going to File -> Settings -> Project -> Python Interpreter -> Add -> Virtualenv Environment -> Base Interpreter -> Python 3.8 -> OK
-
-Otherwise, enter the following commands in the terminal:
-
-Check your python version:
-```bash
-python --version
-```
-
-This should display Python 3.8.10(or 3.7-3.8).
-
-Create a virtual environment:
-```bash
-python3.8 -m venv venv_3.8.10
-```
-
-#### 2. Activate the virtual environment:
-
-Be careful with the path, it may be different on your machine.
+#### 1. Install the required packages:
 
 ```bash
-venv_3.8.10/Scripts/activate
+pip install -r requirements.txt
 ```
-
-
-#### 3. Install the required packages:
-
-```bash
-pip install -r failsafe_requirements.txt
-```
-
-Note: if you are working with Apple M-series chips, you may need to consider installing torch==1.12, instead of torch==1.7.1.
-#### 4. Testing
+#### 2. Testing
 
 Run the following command to impute missing values in the SMP dataset:
 ```bash
@@ -93,27 +62,7 @@ In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 
 Our make_graphs.py script uses newer Python versions as dependency, so you should:
 
-#### 1. Deactivate the virtual environment:
-```bash
-deactivate
-```
-If you are working with a modern compiler, e.g. PyCharm, you may need to change your Python interpreter to a newer version, e.g. Python 3.11 or Python 3.12.
-
-Now check your python version:
-```bash
-python --version
-```
-This should display Python version that's higher than 3.8.10, in my side, I choose to use Python 3.11.4.
-
-
-#### 2. Install the required packages:
-
-```bash
-pip install -r requirements_graph.txt
-```
-If you are willing to create a virtual environment, you can, but you can also install the dependencies directly. 
-
-#### 3. Replace the experiment name in the make_graphs.py script:
+#### 1. Replace the experiment name in the make_graphs.py script:
 
 Don't forget to replace the experiment name in the make_graphs.py script with your experiment name.
 
@@ -121,7 +70,7 @@ Don't forget to replace the experiment name in the make_graphs.py script with yo
 experiment_name = "[your experiments name]"
 ```
 
-#### 4. Run the make_graphs.py script:
+#### 2. Run the make_graphs.py script:
 
 ```bash
 python make_graphs.py
