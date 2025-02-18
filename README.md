@@ -58,9 +58,7 @@ It will also display in your experiments' folder. You may copy [your experiments
 
 In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 
-## Installation and Drawing Graphs
-
-Our make_graphs.py script uses newer Python versions as dependency, so you should:
+## Drawing Graphs
 
 #### 1. Replace the experiment name in the make_graphs.py script:
 
