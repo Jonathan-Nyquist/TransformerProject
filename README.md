@@ -54,7 +54,7 @@ Now your CMD will display:
 ```html
 Saved predictions, targets, masks, metrics, and IDs to 'experiments\[your experiments name]\predictions\best_predictions.npz'                                                                                               
 ```
-It will also display in your experiments' folder. You may copy [your experiments name], and save it somewhere for now. 
+It will also display in your `experiments` folder. You may copy [your experiments name], and save it somewhere for now. 
 
 In my side, it is "SMPModelSKLearn_2024-11-18_17-33-15_zoS"
 
@@ -89,7 +89,23 @@ If you already have a gap in your data, you can skip this step.
 
 After creating the gap, you should use `process_data.py` to convert your data into testing and training data in `.csv` format.
 
-`process_data.py` will print all the gaps you have in that column. Be cautious if there are multiple gaps, and ensure you are working with the correct gap. Also, check the column name you are interested in. You should change the column name here:  
+`process_data.py` will print all the gaps you have in that column. Be cautious if there are multiple gaps, and ensure you are working with the correct gap.
+
+You may choose the gap with modifying: 
+
+```
+start = nan_gap[1][0]
+end = nan_gap[1][1]
+```
+
+This means you are currently considering the second gap. For example, you might be considering the first gap, or you could set it up like this if the column only has one gap:
+
+```
+start = nan_gap[0][0]
+end = nan_gap[0][1]
+```
+
+Also, check the column name you are interested in. You should change the column name here:  
 ```html
 nan_gap = getGapAll(data["P3_VWC"])
 ```
