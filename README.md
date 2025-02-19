@@ -98,7 +98,9 @@ start = nan_gap[1][0]
 end = nan_gap[1][1]
 ```
 
-This means you are currently considering the second gap. For example, you might be considering the first gap, or you could set it up like this if the column only has one gap:
+This means you are currently considering the second gap.
+
+As an example, you might want to be considering the first gap, or you could set it up like this if the column only has one gap:
 
 ```
 start = nan_gap[0][0]
