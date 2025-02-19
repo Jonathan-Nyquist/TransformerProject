@@ -74,15 +74,34 @@ experiment_name = "[your experiments name]"
 python make_graphs.py
 ```
 
-Now you should be able to see the results in the "experiments" folder.
 
-## Training the model
+## Training Your Own Model
 
-In case you want to train a new model, this is an example: 
+In case you want to train a new model, here is an example:
+
+#### 1. Process the Data
+
+First, you need to have your data in a `.pkl` file. You may decide whether or not to create an artificial gap; if you do, you might want to use `make_gap.py`.
+
+In this example, I created an artificial gap in the `OriginalSMPData` dataset, column_name = "P3_VWC", between indices 1440:4319. The data is saved to `data/SMPTestGap.pkl`.
+
+If you already have a gap in your data, you can skip this step.
+
+After creating the gap, you should use `process_data.py` to convert your data into testing and training data in `.csv` format.
+
+`process_data.py` will print all the gaps you have in that column. Be cautious if there are multiple gaps, and ensure you are working with the correct gap. Also, check the column name you are interested in. You should change the column name here:  
+```html
+nan_gap = getGapAll(data["P3_VWC"])
+```
+
+#### 2. Train the model
+
+This is an example command to train a new model:
+
 ```bash
 python src/main.py `
 --output_dir experiments `
---data_dir data/SMP `
+--data_dir data/SMPTestGap `
 --name SMPModel `
 --batch_size 128 `
 --normalization standardization `
@@ -104,9 +123,29 @@ python src/main.py `
 --mask_distribution 'geometric' `
 ```
 
-Don't forget to change your masking rule, for training part, you may use the default version
+Make sure to change the `data_dir` to the directory where your data is stored.
+
+Don't forget to update your masking rule for the training part; you can use the default version.
+
+In `src/datasets/dataset.py`, on line 35, you will find a function called `noise_mask`. You should change it to `noise_mask` for the training part:
 ```html
-mask = noise_mask_v2(X, self.masking_ratio, self.mean_mask_length, self.mode, self.distribution,self.exclude_feats)  # (seq_length, feat_dim) boolean array
+mask = noise_mask(X, self.masking_ratio, self.mean_mask_length, self.mode, self.distribution,self.exclude_feats)  # (seq_length, feat_dim) boolean array
 ```
 
-You may change noise_mask_v2 to noise_mask for training part.
+#### 3. Testing the model
+For the testing part, you must change `noise_mask` to `noise_mask_v2`.
+
+The testing part has already been explained.
+
+```html
+mask = noise_mask_v2(X, self.masking_ratio, self.mean_mask_length, self.mode, self.distribution,self.exclude_feats)  # (seq_length, feat_dim) boolean array
+`````
+
+When making graphs, be cautious with the following parameters:
+
+```html
+start = 1440    # Gap start index
+end = 4320      # Gap end index
+intervals = {"P3_VWC": [0, 2160 - start]}  # Column and gap interval
+```
+These correspond to your gap start and end points, your column name, and the interval of the gap.

@@ -155,18 +155,18 @@ def getNonNanData(total_length, gaps):
 
     return non_nan_ranges
 
-data = pd.read_pickle('data/SMPSKLearnGap.pkl')
+data = pd.read_pickle('data/SMPTestGap.pkl')
 # Find the gap. This will be used later for plotting
-nan_gap = getGapAll(data["P2_VWC"])
+nan_gap = getGapAll(data["P3_VWC"])
 print(nan_gap)
 
-start = nan_gap[0][0]
-end = nan_gap[0][1]
+start = nan_gap[1][0]
+end = nan_gap[1][1]
 # Separate validation set from training set.
 # I do not know why, but removing the test set from the validation set is necessary, otherwise the predictions are all over the place
 valData = data[start:end]
 data = data.drop(data.index[start:end])
 
 # Write test and train sets to local directory
-data.to_csv("data/SMPSKLearn/SMP_TRAIN.csv")
-valData.to_csv("data/SMPSKLearn/SMP_TEST.csv")
+data.to_csv("data/SMPTest/SMP_TRAIN.csv")
+valData.to_csv("data/SMPTest/SMP_TEST.csv")

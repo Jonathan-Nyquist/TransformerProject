@@ -71,7 +71,7 @@ def denormalize(df, std, mean):
     return df * (std + np.finfo(float).eps) + mean
 
 
-experiment_name = "SMPModel_2025-01-18_20-12-04_7Zz"
+experiment_name = "SMPModelTest_2025-02-19_19-41-24_MbF"
 path = f"experiments/{experiment_name}/predictions/best_predictions.npz"
 pathnorm = f"experiments/{experiment_name}/normalization.pickle"
 # actual is the data without the gap
@@ -118,10 +118,10 @@ for column in df.columns:
 df = df[:len(matching_rows)]
 df.index = matching_rows.index
 
-intervals = {"P2_VWC": [0, 2160 - start]}
+intervals = {"P3_VWC": [0, 2160 - start]}
 for col in intervals:
     statisics(df[col][intervals[col][0]:intervals[col][1]], matching_rows[col][intervals[col][0]:intervals[col][1]])
 for col in intervals:
-    plot(df[col], matching_rows[col], 0, len(df[col]), title="%s %s" % (title, "P2_VWC"))
+    plot(df[col], matching_rows[col], 0, len(df[col]), title="%s %s" % (title, "P3_VWC"))
 for col in intervals:
-    plot(df[col], matching_rows[col], intervals[col][0], intervals[col][1], title="%s %s" % (title, "P2_VWC"))
+    plot(df[col], matching_rows[col], intervals[col][0], intervals[col][1], title="%s %s" % (title, "P3_VWC"))
