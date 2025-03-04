@@ -26,7 +26,16 @@ def MAPE(predicted, actual):
 # start and end determines the interval that will be plotted
 # title, y, and x can be customized. They are just labels for the plot itself / axis
 # extras is an array of data frames (similar to pred and actual). This is here if you want to plot something else alongside pred and actual
-def plot(pred, actual, start, end, title="Prediction vs Actual", y="VWC (mm)", x="Time", extras=[]):
+def plot(
+    pred,
+    actual,
+    start,
+    end,
+    title="Prediction vs Actual",
+    y="VWC (mm)",
+    x="Time",
+    extras=[],
+):
     fig, ax = plt.subplots(figsize=(20, 5))
     ax.set_title(title)
     ax.set_ylabel(y)
@@ -42,7 +51,7 @@ def plot(pred, actual, start, end, title="Prediction vs Actual", y="VWC (mm)", x
 # Prints all the statistics.
 # This works best if you pass in the specific interval you want statistics on
 # For example df[column][0:100]
-def statisics(pred, actual):
+def statistics(pred, actual):
     if type(pred) != torch.Tensor:
         p = torch.tensor(pred.values)
     else:
@@ -85,11 +94,11 @@ title = "SkLearn Filled Data - Epoch 300, mean mask length 50, batch size 128, W
 # data is the best predictions
 data = load(path, allow_pickle=True)
 
-# Norm contains all the std and means for denormization purposes
+# Norm contains all the std and means for denormalization purposes
 norm = load(pathnorm, allow_pickle=True)
 
 # In best predictions, ther are several sections, and predictions is the name of the predictions that we want
-pred = data['predictions']
+pred = data["predictions"]
 print(pred.shape)
 # The predictions are of shape num batches, batch size, window size, row size
 # This converts that format into a standard df
@@ -108,20 +117,31 @@ df.columns = actual.columns
 dates = testSet.index
 matching_rows = actual.loc[actual.index.isin(dates)]
 
-# Denormizing each column
+# Denormalizing each column
 # Doing it all at once fails
 for column in df.columns:
-    df[column] = denormalize(df[column], norm['std'][column], norm['mean'][column])
+    df[column] = denormalize(df[column], norm["std"][column], norm["mean"][column])
 
-# Sometimes the prediction is larger than the gap due to the transoformer filling in for extra space if there are not enough batches to fill the entire batch size
+# Sometimes the prediction is larger than the gap due to the transformer filling in for extra space if there are not enough batches to fill the entire batch size
 # this fixes the issue by trimming off the excess
-df = df[:len(matching_rows)]
+df = df[: len(matching_rows)]
 df.index = matching_rows.index
 
 intervals = {"P3_VWC": [0, 2160 - start]}
 for col in intervals:
-    statisics(df[col][intervals[col][0]:intervals[col][1]], matching_rows[col][intervals[col][0]:intervals[col][1]])
+    statistics(
+        df[col][intervals[col][0] : intervals[col][1]],
+        matching_rows[col][intervals[col][0] : intervals[col][1]],
+    )
 for col in intervals:
-    plot(df[col], matching_rows[col], 0, len(df[col]), title="%s %s" % (title, "P3_VWC"))
+    plot(
+        df[col], matching_rows[col], 0, len(df[col]), title="%s %s" % (title, "P3_VWC")
+    )
 for col in intervals:
-    plot(df[col], matching_rows[col], intervals[col][0], intervals[col][1], title="%s %s" % (title, "P3_VWC"))
+    plot(
+        df[col],
+        matching_rows[col],
+        intervals[col][0],
+        intervals[col][1],
+        title="%s %s" % (title, "P3_VWC"),
+    )
